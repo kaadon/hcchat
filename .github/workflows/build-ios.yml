@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 60
     env:
-      BUNDLE_ID: com.qingniao.im
+      BUNDLE_ID: com.ioslgm.72322
       EXPORT_METHOD: ad-hoc
     steps:
       - uses: actions/checkout@v4
