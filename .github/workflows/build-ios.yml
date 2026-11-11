@@ -61,8 +61,11 @@ jobs:
 
           echo "证书: $SIGN_IDENTITY"
           echo "描述文件: $PROFILE_NAME / Team $TEAM_ID"
-          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" | /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin
-          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" | /usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" /dev/stdin || echo "警告：描述文件未启用 Push Notifications"
+          # 诊断信息（失败不影响构建）
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" > "$RUNNER_TEMP/profile.plist"
+          echo "application-identifier: $(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo 未找到)"
+          echo "aps-environment: $(/usr/libexec/PlistBuddy -c 'Print :Entitlements:aps-environment' "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo '未启用 Push Notifications')"
+          echo "类型: $(/usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$RUNNER_TEMP/profile.plist" >/dev/null 2>&1 && echo Ad-Hoc/Development || echo App-Store/Enterprise)"
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
           echo "TEAM_ID=$TEAM_ID" >> "$GITHUB_ENV"
