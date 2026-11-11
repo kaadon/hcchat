@@ -45,6 +45,7 @@ jobs:
           security import "$RUNNER_TEMP/cert.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+          security default-keychain -s "$KEYCHAIN"
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(security cms -D -i "$RUNNER_TEMP/profile.mobileprovision")")
@@ -66,6 +67,12 @@ jobs:
           echo "application-identifier: $(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo 未找到)"
           echo "aps-environment: $(/usr/libexec/PlistBuddy -c 'Print :Entitlements:aps-environment' "$RUNNER_TEMP/profile.plist" 2>/dev/null || echo '未启用 Push Notifications')"
           echo "类型: $(/usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$RUNNER_TEMP/profile.plist" >/dev/null 2>&1 && echo Ad-Hoc/Development || echo App-Store/Enterprise)"
+
+          # ad-hoc 导出要求描述文件带设备列表，否则提前报错（比 xcodebuild 的报错清楚）
+          if [ "$EXPORT_METHOD" = "ad-hoc" ] && ! /usr/libexec/PlistBuddy -c 'Print :ProvisionedDevices' "$RUNNER_TEMP/profile.plist" >/dev/null 2>&1; then
+            echo "::error::导出方式是 ad-hoc，但描述文件不含设备列表（不是 Ad Hoc 类型）"
+            exit 1
+          fi
 
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
           echo "TEAM_ID=$TEAM_ID" >> "$GITHUB_ENV"
@@ -105,6 +112,11 @@ jobs:
             end
             proj.save
           '
+
+      # entitlements 里是 development；分发签名必须与描述文件一致（production），
+      # 否则手动签名会报 aps-environment 不匹配
+      - name: 切换推送环境为 production
+        run: /usr/libexec/PlistBuddy -c "Set :aps-environment production" ios/Runner/Runner.entitlements
 
       - name: 构建 IPA
         run: |
