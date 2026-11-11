@@ -3,10 +3,19 @@ name: Build iOS IPA
 on:
   workflow_dispatch:
   push:
+    branches: [master]
     tags: ["v*"]
+    paths-ignore:
+      - "**.txt"
+      - "**.md"
 
 permissions:
   contents: read
+
+# 连续推送时取消还在跑的旧构建，节省 macOS 分钟数
+concurrency:
+  group: build-ios-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-ios:
@@ -16,7 +25,7 @@ jobs:
       BUNDLE_ID: com.ioslgm.72322
       EXPORT_METHOD: ad-hoc
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # 默认 Xcode 16.4 太旧：video_player_avfoundation 2.12.x 用到新版 Swift 的 isolation: 参数
       - name: 切换 Xcode 26.3
@@ -25,7 +34,7 @@ jobs:
           xcodebuild -version
 
       - name: 安装 Flutter
-        uses: subosito/flutter-action@1c5eb12d812966ca84680edc38353a0851c8fd56 # v2.14.0
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
@@ -133,7 +142,7 @@ jobs:
             --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
 
       - name: 上传 IPA
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Hchat-ipa-${{ github.run_number }}
           path: build/ios/ipa/*.ipa
