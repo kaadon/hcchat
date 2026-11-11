@@ -1,0 +1,109 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-ios:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      BUNDLE_ID: com.qingniao.im
+      EXPORT_METHOD: ad-hoc
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装 Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # livekit_client 仅支持 CocoaPods，与 SPM 冲突（见 ios/Podfile 顶部说明）
+      - name: 关闭 Swift Package Manager
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: 安装依赖
+        run: flutter pub get
+
+      - name: 导入证书和描述文件
+        env:
+          P12_BASE64: ${{ secrets.IOS_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_CERT_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ github.run_id }}-ci
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          echo "$PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/profile.mobileprovision"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychain -d user -s "$KEYCHAIN" login.keychain-db
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< "$(security cms -D -i "$RUNNER_TEMP/profile.mobileprovision")")
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" /dev/stdin <<< "$(security cms -D -i "$RUNNER_TEMP/profile.mobileprovision")")
+          TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin <<< "$(security cms -D -i "$RUNNER_TEMP/profile.mobileprovision")")
+          cp "$RUNNER_TEMP/profile.mobileprovision" ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID".mobileprovision
+
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          echo "TEAM_ID=$TEAM_ID" >> "$GITHUB_ENV"
+
+      - name: 生成 ExportOptions.plist
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>${EXPORT_METHOD}</string>
+            <key>teamID</key><string>${TEAM_ID}</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict><key>${BUNDLE_ID}</key><string>${PROFILE_NAME}</string></dict>
+            <key>compileBitcode</key><false/>
+            <key>stripSwiftSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+
+      # 只给 Runner 目标改手动签名（全局覆盖会让 Pods 目标报错）
+      - name: 配置 Runner 手动签名
+        run: |
+          ruby -e '
+            require "xcodeproj"
+            proj = Xcodeproj::Project.open("ios/Runner.xcodeproj")
+            t = proj.targets.find { |x| x.name == "Runner" }
+            t.build_configurations.each do |c|
+              c.build_settings["CODE_SIGN_STYLE"] = "Manual"
+              c.build_settings["DEVELOPMENT_TEAM"] = ENV["TEAM_ID"]
+              c.build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["PROFILE_NAME"]
+              c.build_settings["CODE_SIGN_IDENTITY"] = "iPhone Distribution"
+              c.build_settings["CODE_SIGN_IDENTITY[sdk=iphoneos*]"] = "iPhone Distribution"
+            end
+            proj.save
+          '
+
+      - name: 构建 IPA
+        run: |
+          flutter build ipa --release \
+            --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: 上传 IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Hchat-ipa-${{ github.run_number }}
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+
+      - name: 清理钥匙串
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/build.keychain-db" || true
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision

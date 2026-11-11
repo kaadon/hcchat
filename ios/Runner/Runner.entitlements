@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 极光推送必需：APNs 推送环境 entitlement。
+	     development = 开发证书调试用；Xcode 归档上传 App Store 时自动替换为 production。 -->
+	<key>aps-environment</key>
+	<string>development</string>
+</dict>
+</plist>

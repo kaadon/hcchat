@@ -1,0 +1,24 @@
+{
+  "@@locale": "en",
+  "appName": "Enterprise IM",
+  "tabMessages": "Messages",
+  "tabContacts": "Contacts",
+  "tabCalls": "Calls",
+  "tabMe": "Me",
+  "chatTitle": "Messages",
+  "chatUnreadSummary": "{count} conversations unread",
+  "@chatUnreadSummary": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "chatSearchPlaceholder": "Search people, groups, messages",
+  "chatVideoCall": "Video Call",
+  "chatVoiceCall": "Voice Call",
+  "chatPinned": "Pinned",
+  "chatAll": "All Messages",
+  "authLogin": "Login",
+  "authRegister": "Register",
+  "authAccount": "Account",
+  "authPassword": "Password",
+  "authInviteCode": "Invite Code",
+  "authSendCode": "Send Code"
+}

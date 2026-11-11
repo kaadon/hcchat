@@ -1,0 +1,24 @@
+{
+  "@@locale": "zh",
+  "appName": "企业 IM",
+  "tabMessages": "消息",
+  "tabContacts": "通讯录",
+  "tabCalls": "通话",
+  "tabMe": "我的",
+  "chatTitle": "消息",
+  "chatUnreadSummary": "{count} 个会话有未读消息",
+  "@chatUnreadSummary": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "chatSearchPlaceholder": "搜索同事、群组、聊天记录",
+  "chatVideoCall": "视频通话",
+  "chatVoiceCall": "语音通话",
+  "chatPinned": "置顶",
+  "chatAll": "全部消息",
+  "authLogin": "登录",
+  "authRegister": "注册",
+  "authAccount": "账号",
+  "authPassword": "密码",
+  "authInviteCode": "邀请码",
+  "authSendCode": "发送验证码"
+}

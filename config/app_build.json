@@ -1,0 +1,22 @@
+{
+  "_说明": "APP 打包总配置——只改这个文件，然后在 im-app 目录执行: build_app.bat（一键完成 clean+依赖+配置同步+图标+启动图+出APK）；日常快速打包用: build_app.bat noclean",
+  "_字段说明": {
+    "appName": "APK 安装后显示的应用名称（桌面图标下的名字）",
+    "packageName": "Android 包名（应用唯一标识，上架后不可随意改，改了等于换应用）",
+    "iosPackageName": "iOS 包名，留空则跟随 packageName；必须与苹果 ad-hoc 描述文件的包名完全一致（错一个字母都签不上）",
+    "versionName": "版本名，展示给用户，如 1.0.0",
+    "versionCode": "版本号，整数，每次发版必须 +1（应用商店判断是否更新）",
+    "apiBase": "后端接口地址（局域网测试填电脑 IP，如 http://192.168.1.11:8080）",
+    "wsBase": "WebSocket 地址（端口一般是 9090）",
+    "icon": "APP 图标源图，建议 1024x1024 PNG，放在 assets/icon/ 下"
+  },
+  "appName": "Hchat",
+  "packageName": "com.qingniao.im",
+  "iosPackageName": "com.qingniao.im",
+  "versionName": "1.4.6",
+  "versionCode": 27,
+  "apiBase": "https://www.hchat.top",
+  "wsBase": "wss://www.hchat.top/ws",
+  "jpushAppKey": "",
+  "icon": "assets/icon/app_icon.png"
+}

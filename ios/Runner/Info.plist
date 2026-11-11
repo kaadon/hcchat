@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true/>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>Hchat</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>Hchat</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<!-- 出口合规声明：仅使用系统标准加密（HTTPS/TLS），无需 CCATS 文档。
+		     若日后启用自研端到端加密算法，需改为 <true/> 并补充合规材料 -->
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<!-- 音视频通话（腾讯云 TRTC）：iOS 缺这两项时一调用摄像头/麦克风就直接崩溃 -->
+		<key>NSCameraUsageDescription</key>
+		<string>视频通话需要使用摄像头拍摄画面</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>语音和视频通话需要使用麦克风采集声音</string>
+		<!-- 相册选图发送（image_picker） -->
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>发送图片时需要访问相册</string>
+		<!-- 朋友圈图片保存到相册（image_gallery_saver 只写入不读取） -->
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>保存图片到相册时需要添加照片权限</string>
+		<!-- 极光 JCore 引用了 CoreLocation API（ITMS-90683）：App 本身不采集位置，
+	     仅推送 SDK 在网络切换时用其做连接优化；拒绝授权不影响任何功能 -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>用于提升消息推送在网络切换时的送达可靠性，拒绝授权不影响使用</string>
+		<!-- 发现页内置 WebView：仅对 App 内 WKWebView 放行 http 网页（小程序）；
+	     App 自身网络请求仍强制 HTTPS；NSAllowsLocalNetworking 保留局域网 http 调试能力。
+	     2026-09-19 补 NSAllowsArbitraryLoads：ad-hoc 分发包接口可能用 http（无证书域名），
+	     iOS ATS 默认拦截一切 http → 启动页接口全挂反复重试像卡死。ad-hoc 包全局放行；
+	     以后上 App Store 前再按需收紧（https 接口本来就不需要这行）。 -->
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+			<key>NSAllowsArbitraryLoadsInWebContent</key>
+			<true/>
+			<key>NSAllowsLocalNetworking</key>
+			<true/>
+		</dict>
+		<key>UIApplicationSceneManifest</key>
+		<dict>
+			<key>UIApplicationSupportsMultipleScenes</key>
+			<false/>
+			<key>UISceneConfigurations</key>
+			<dict>
+				<key>UIWindowSceneSessionRoleApplication</key>
+				<array>
+					<dict>
+						<key>UISceneClassName</key>
+						<string>UIWindowScene</string>
+						<key>UISceneConfigurationName</key>
+						<string>flutter</string>
+						<key>UISceneDelegateClassName</key>
+						<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+						<key>UISceneStoryboardFile</key>
+						<string>Main</string>
+					</dict>
+				</array>
+			</dict>
+		</dict>
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true/>
+		<!-- 极光推送必需：允许 App 退后台后仍接收 APNs 长连接唤醒 -->
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>remote-notification</string>
+		</array>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UIStatusBarHidden</key>
+		<false/>
+	</dict>
+</plist>

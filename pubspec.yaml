@@ -1,0 +1,107 @@
+name: im_app
+description: "企业内部即时通讯 - 移动端"
+publish_to: 'none'
+version: 1.4.6+27
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  lpinyin: ^2.0.3             # 汉字转拼音（通讯录按**拼音首字母**分组 + 右侧 A–Z 索引条，2026-09-14）
+                              # 纯 Dart、无原生依赖；参考 APK 的索引条就是拼音分组（产→C/活→H/技→J）
+  dio: ^5.5.0                 # HTTP
+  cross_file: ^0.3.5          # XFile 类型（api_client.uploadXFile 的 H5 文件上传适配，2026-09-16）
+  flutter_secure_storage: ^9.2.2  # token 安全存储
+  hive: ^2.2.3                # 本地持久化 KV（会话列表 + 每会话最近消息，缓存方案 P0-1）
+  hive_flutter: ^1.1.0        # Hive 的 Flutter 初始化封装（自带 path_provider）
+  provider: ^6.1.2            # 状态管理
+  web_socket_channel: ^3.0.0   # WS 长连接（跨 IO/Web 平台，消息实时收发）
+  url_launcher: ^6.3.0        # 发现页打开网页小程序（H5 新标签 / native 浏览器）
+  webview_flutter: ^4.10.0    # 发现页网页小程序 App 内打开（Android/iOS WebView）
+  webview_flutter_android: ^4.14.1 # 位置选点页 WebView：放行 H5 定位授权弹窗（geolocation prompt）
+  pdfx: ^2.4.0                # 文件预览：PDF（含 Office 转 PDF）渲染
+  photo_view: ^0.15.0         # 文件预览：图片缩放查看
+  video_player: ^2.9.2        # 文件预览：视频在线流式播放（后端 preview kind=video，raw 代理支持 Range）
+  video_thumbnail: ^0.5.3     # 视频消息封面：发送前抽帧生成缩略图（需求：视频文件要有封面）
+  qr_flutter: ^4.1.0         # 扫码登录页生成二维码
+  mobile_scanner: ^6.0.0     # 移动端扫一扫（升级 6.x 修复 Android 摄像头 NPE）
+  cached_network_image: ^3.4.1  # 头像等图片磁盘缓存（Image.network 无磁盘缓存，隔段时间全量重拉，2026-09-20）
+  image_picker: ^1.1.2       # 相册选图发送（需求3：图片发送）
+  wechat_assets_picker: ^9.0.0 # 聊天相册：微信式应用内相册选择器（照片+视频混合多选，
+                               # 界面可控；image_picker 的相册类调用在 Android 上走
+                               # ACTION_GET_CONTENT 系统文件选择器，界面不可控）
+  file_picker: ^11.0.3       # 本地文件选择（功能 A：聊天发文件 → 群文件云盘）
+  image_gallery_saver_plus: ^5.1.1 # 图片保存到系统相册（原 image_gallery_saver 2.0.3 未适配新 AGP namespace 致构建失败，换维护版分支，API 兼容）
+  permission_handler: ^11.3.1 # 运行时权限申请（音视频通话的麦克风/摄像头）
+  jpush_flutter: 3.5.6       # 极光推送（离线消息系统通知，Android 厂商通道 + iOS APNs）
+  getuiflut: ^0.2.41         # 个推推送（iOS 默认通道，服务端 push_provider_ios 默认 getui）
+  flutter_local_notifications: ^17.2.4  # 本地通知（App 在线/后台时 WS 收到新消息 → 通知栏提示；
+                                        # 极光只推离线用户，App 挂着 WS 时服务端不推，需本地补）
+  flutter_foreground_task: ^11.0.1 # Android 前台服务保活（防进程被杀，配合 WS 长连接）
+  audioplayers: ^6.0.0       # 铃声/提示音播放（新消息/来电/加好友）
+  flutter_sound: ^9.30.0     # 语音消息录制/播放（type=4，2026-09-17；原生录 aacMP4/.m4a，H5 录 opusWebM/.webm）
+  path_provider: ^2.1.2      # 录音临时文件目录（语音消息录制，flutter_sound 间接依赖，此处显式声明）
+  cryptography: ^2.7.0       # E2EE 端到端加密（type=13，2026-09-18 §36）：X25519/AES-GCM/PBKDF2/HKDF 纯 Dart 实现（原生+web）
+  # 阶段 V2.0：腾讯云实时音视频（官方插件，不自己造轮子）
+  # 本地化（packages/）：移除 web 平台声明，web 端用模拟实现（trtc_engine_web.dart），
+  # 避免 flutter build web 编译插件 web 实现报 platformViewRegistry 未定义
+  tencent_trtc_cloud:
+    path: packages/tencent_trtc_cloud
+  flutter_webrtc: ^1.6.2      # WebRTC 开源引擎（后台 call_engine=webrtc 时启用；PC 端浏览器原生支持）
+                              # 0.11.7 在新版 Flutter 编译报错（v1 embedding Registrar 已被移除），升级到 1.6.x
+  livekit_client: ^2.13.0     # LiveKit 开源 SFU 引擎（后台 call_engine=livekit 时启用；原生+Web 通吃）
+                              # 2026-09-22 从 2.5.0 升到 2.13.0：唯一与 flutter_webrtc 1.6.2 的
+                              # WebRTC-SDK pod pin（=150.7871.01）对齐的版本，解 iOS CI
+                              # pod install「两个精确版本互斥」冲突（2.7~2.10 是 m144 仍冲突）
+  connectivity_plus: ^7.0.0   # livekit_client 2.13.0 传递依赖要求 ^7.0.0（原 6.1.5 联动升级）；
+                              # H5 垫片（web_connectivity_shim）直接 import，6.x 老式 web 注册在新
+                              # SDK 被跳过，须以垫片替代（7.x web 实现同理，垫片在 main 启动覆盖）
+  connectivity_plus_platform_interface: ^2.1.0  # 同上，垫片实现 ConnectivityPlatform 用
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1   # 一键生成各密度 APP 图标
+  flutter_native_splash: ^2.4.1     # 一键生成启动图（Android + iOS）
+
+flutter:
+  uses-material-design: true
+  generate: true   # 启用 l10n 自动生成
+  assets:
+    - assets/icon/app_icon.png    # App 图标（登录页等内置默认 Logo 回退用，2026-09-20）
+    - assets/icon/splash_logo.png  # 启动图源图（登录页入场覆盖层动画用，2026-09-20）
+    - assets/config/app_config.json   # 接口地址配置文件（需求5）
+    - assets/chat_bg_doodle.png       # 聊天背景/气泡颜色预览卡的白色涂鸦线稿（透明 PNG，取自参考图）
+    - assets/me_header_doodle.png     # 用户中心头部蓝区的白色涂鸦线稿（透明 PNG，取自参考图）
+    - assets/sounds/                  # 铃声/提示音（新消息/来电/加好友）
+    - assets/images/beijing.jpg       # 朋友圈封面系统指定背景图（需求7-1 写死）
+    - assets/images/redpacket/        # 红包切图（ckao 同款：信封开/已开）
+    - assets/images/default_avatars/  # 注册页「选择一个头像」的 6 张预设头像（512x512 PNG）
+    - assets/icons/                   # 底部 Tab 图标（参考包直拷：未选中灰 / 选中近黑）
+
+# APP 图标：源图放 assets/icon/app_icon.png（1024x1024 PNG）
+# 换图标后执行：dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+
+# 启动图：logo 源图放 assets/icon/splash_logo.png（建议 1024x1024 PNG，
+# 透明背景，logo 主体居中、四周留白约 30%，Android 12+ 会按圆形裁剪）
+# 改完执行：dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#ffffff"                      # 启动背景色（改成你主色调）
+  image: assets/icon/splash_logo.png    # 居中 logo
+  android: true
+  ios: true
+  web: false
+  android_12:                           # Android 12+ 新版启动 API，必须单独配
+    color: "#ffffff"
+    image: assets/icon/splash_logo.png
