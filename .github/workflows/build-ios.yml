@@ -52,8 +52,21 @@ jobs:
           TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" /dev/stdin <<< "$(security cms -D -i "$RUNNER_TEMP/profile.mobileprovision")")
           cp "$RUNNER_TEMP/profile.mobileprovision" ~/Library/MobileDevice/Provisioning\ Profiles/"$PROFILE_UUID".mobileprovision
 
+          # 从钥匙串读取真实证书名（Apple Distribution: xxx / iPhone Distribution: xxx）
+          SIGN_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -o '"[^"]*"' | head -1 | tr -d '"')
+          if [ -z "$SIGN_IDENTITY" ]; then
+            echo "::error::钥匙串里没有可用的签名证书（.p12 密码错误，或没有带私钥）"
+            exit 1
+          fi
+
+          echo "证书: $SIGN_IDENTITY"
+          echo "描述文件: $PROFILE_NAME / Team $TEAM_ID"
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" | /usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" | /usr/libexec/PlistBuddy -c "Print :Entitlements:aps-environment" /dev/stdin || echo "警告：描述文件未启用 Push Notifications"
+
           echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
           echo "TEAM_ID=$TEAM_ID" >> "$GITHUB_ENV"
+          echo "SIGN_IDENTITY=$SIGN_IDENTITY" >> "$GITHUB_ENV"
 
       - name: 生成 ExportOptions.plist
         run: |
@@ -84,15 +97,15 @@ jobs:
               c.build_settings["CODE_SIGN_STYLE"] = "Manual"
               c.build_settings["DEVELOPMENT_TEAM"] = ENV["TEAM_ID"]
               c.build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ENV["PROFILE_NAME"]
-              c.build_settings["CODE_SIGN_IDENTITY"] = "iPhone Distribution"
-              c.build_settings["CODE_SIGN_IDENTITY[sdk=iphoneos*]"] = "iPhone Distribution"
+              c.build_settings["CODE_SIGN_IDENTITY"] = ENV["SIGN_IDENTITY"]
+              c.build_settings["CODE_SIGN_IDENTITY[sdk=iphoneos*]"] = ENV["SIGN_IDENTITY"]
             end
             proj.save
           '
 
       - name: 构建 IPA
         run: |
-          flutter build ipa --release \
+          flutter build ipa --release -v \
             --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
 
       - name: 上传 IPA
