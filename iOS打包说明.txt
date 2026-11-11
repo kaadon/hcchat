@@ -3,7 +3,7 @@ Hchat iOS 打包说明
 ========================================
 更新时间：2026-11-08
 当前版本：1.4.6+27（pubspec.yaml，与安卓 APK 完全一致）
-Bundle ID：com.qingniao.im
+Bundle ID：com.ioslgm.72322
 App 显示名：Hchat（桌面图标下的名字，已由 MICHAT 改为 Hchat）
 后端地址：https://www.hchat.top（assets/config/app_config.json）
 
@@ -52,7 +52,7 @@ App 显示名：Hchat（桌面图标下的名字，已由 MICHAT 改为 Hchat）
    - 选中 Runner target → Signing & Capabilities
    - 勾选 "Automatically manage signing"
    - Team 选择你的 Apple 开发者账号
-   - Bundle Identifier 保持 com.qingniao.im（勿改）
+   - Bundle Identifier 保持 com.ioslgm.72322（勿改）
    - 确认 Capabilities 里有 Push Notifications（工程已带
      Runner.entitlements 的 aps-environment，正常会自动显示）
 
@@ -71,7 +71,7 @@ App 显示名：Hchat（桌面图标下的名字，已由 MICHAT 改为 Hchat）
    同步改这两处（versionCode 必须 +1）。
 
 2. 【Bundle ID 一致】iOS 签名时，Apple 开发者后台的
-   App ID / ad-hoc 描述文件必须也是 com.qingniao.im，
+   App ID / ad-hoc 描述文件必须也是 com.ioslgm.72322，
    错一个字母都签不上。
 
 3. 【推送 = 极光推送（JPush）】
@@ -83,7 +83,7 @@ App 显示名：Hchat（桌面图标下的名字，已由 MICHAT 改为 Hchat）
      在极光控制台拿到 AppKey 后填到该文件：
        "jpushAppKey": "你的极光AppKey"
      （iOS 和安卓用同一个 AppKey；极光后台该应用需上传
-     iOS 推送证书 .p12 并绑定 Bundle ID com.qingniao.im）
+     iOS 推送证书 .p12 并绑定 Bundle ID com.ioslgm.72322）
    - Info.plist 已配好 remote-notification 后台模式、
      aps-environment entitlement；通知权限由极光 SDK 弹窗申请。
    - 桌面角标：打开 App / 未读归零会自动清零（PushService 处理）。
