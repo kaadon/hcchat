@@ -15,6 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 默认 Xcode 16.4 太旧：video_player_avfoundation 2.12.x 用到新版 Swift 的 isolation: 参数
+      - name: 切换 Xcode 26.3
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app/Contents/Developer
+          xcodebuild -version
+
       - name: 安装 Flutter
         uses: subosito/flutter-action@1c5eb12d812966ca84680edc38353a0851c8fd56 # v2.14.0
         with:
