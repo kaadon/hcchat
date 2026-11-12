@@ -11,7 +11,7 @@
     "icon": "APP 图标源图，建议 1024x1024 PNG，放在 assets/icon/ 下"
   },
   "appName": "Hchat",
-  "packageName": "com.qingniao.im",
+  "packageName": "com.ioslgm.72322",
   "iosPackageName": "com.ioslgm.72322",
   "versionName": "1.4.6",
   "versionCode": 27,
